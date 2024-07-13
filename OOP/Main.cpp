@@ -1,69 +1,152 @@
-/*
 #include <iostream>
-#include <string>
 #include <vector>
-#include <fstream>
-
+#include <string>
+#include<fstream>
 using namespace std;
 
-class Contact {
+class Person {
 public:
-    Contact(string name, string phone_number, string address) {
+    // constructor
+    Person(string name, string address) {
         this->name = name;
-        this->phone_number = phone_number;
         this->address = address;
     }
+    // getters
     string getName() {
         return name;
-    }
-    string getPhoneNumber() {
-        return phone_number;
     }
     string getAddress() {
         return address;
     }
-
+    // setters
     void setName(string name) {
         this->name = name;
-    }
-    void setPhoneNumber(string phone_number) {
-        this->phone_number = phone_number;
     }
     void setAddress(string address) {
         this->address = address;
     }
 
+    //to enable dynamic binding on the destructor
+    ~Person() {
+        deletePerson();
+    }
+
+    void deletePerson() {
+         name = "";
+        address = "";
+    }
+
+    //Pure virtual functions
+    virtual void displayData() = 0;
+    virtual void modifyData(string newName, string newAddress) = 0;
+
 private:
     string name;
-    string phone_number;
     string address;
 };
 
-vector<Contact> friends;
+//Implement a Friend class which inherits from the Person class and overrides the virtual
+//functions in the Person class
+class Friend : public Person {
+public:
+    // constructor
+    Friend(string name, string address, string phone) : Person(name, address) {
+        this->phone = phone;
+    }
+    // getters
+    string getPhone() {
+        return phone;
+    }
+    // setters
+    void setPhone(string phone) {
+        this->phone = phone;
+    }
 
+    // overridden virtual functions
+    void displayData() override {
+        cout << "Name: " << getName() << endl;
+        cout << "Address: " << getAddress() << endl;
+        cout << "Phone: " << phone << endl;
+    }
+    void modifyData(string newName, string newAddress) override {
+        setName(newName);
+        setAddress(newAddress);
+    }
+
+private:
+    string phone;
+};
+
+//Implement a BusinessContact class which inherits from the Person class and overrides
+//the virtual functions in the Person class.
+class Contact : public Person{
+public:
+    Contact(string name, string address, string company_name) : Person(name, address) {
+        this->name = name;
+        this->address = address;
+        this->company_name = company_name;
+    }
+    string getName() {
+        return name;
+    }
+    string getAddress() {
+        return address;
+    }
+    string getCompanyName() {
+        return company_name;
+    }
+    void setName(string name) {
+        this->name = name;
+    }
+    void setAddress(string address) {
+        this->address = address;
+    }
+    void setCompanyName(string company_name) {
+        this->company_name = company_name;
+    }
+
+    // overridden virtual functions
+    void displayData() override {
+        cout << "Name: " << getName() << endl;
+        cout << "Address: " << getAddress() << endl;
+        cout << "Company Name: " << company_name << endl;
+    }
+    void modifyData(string newName, string newAddress) override {
+        setName(newName);
+        setAddress(newAddress);
+    }
+
+private:
+    string name;
+    string address;
+    string company_name;
+};
+
+vector<Contact> business_contacts;
+vector<Friend> friends;
 
 void viewContacts() {
     cout << endl;
-
+    //Friend(string name, string address, string phone) : Person(name, address)
     for (int i = 0; i < friends.size(); i++) {
         cout << i + 1 << ". " << "Name: " << friends[i].getName() << endl;
-        cout << "   Phone Number: " << friends[i].getPhoneNumber() << endl;
+        cout << "   Phone Number: " << friends[i].getPhone() << endl;
         cout << "   Address: " << friends[i].getAddress() << endl;
+        cout << "   Company Name: " << business_contacts[i].getCompanyName() << endl;
     }
     cout << endl;
 }
-
-
-
-int main() {
+void main() {
+   
     while (true) {
+        // menu selection for user
         cout << "=============================================\n";
-        cout << "            MILESTONE 1" << endl;
+        cout << "  SMALL OOP PERSON MANAGEMENT PROJECT" << endl;
         cout << "=============================================\n";
-        cout << "1. Add a friend's contact information" << endl;
-        cout << "2. View all friend's contact information" << endl;
-        cout << "3. Delete a friend's contact information" << endl;
-        cout << "4. Modify a friend's contact information   " << endl;
+        cout << "1. Add a person's contact information" << endl;
+        cout << "2. View contact information" << endl;
+        cout << "3. Delete contact information" << endl;
+        cout << "4. Modify contact information   " << endl;
         cout << "5. Sort contacts" << endl;
         cout << "6. Search for a contact based on a value" << endl;
         cout << "7. Save the contacts into a txt file:" << endl;
@@ -76,8 +159,10 @@ int main() {
         cin >> choice;
 
         //Insertion of a new object
-        if (choice == 1) {
-            string name, phone_number, address;
+        if (choice == 1) { 
+            //Friend(string name, string address, string phone) : Person(name, address)
+            // Contact(string name, string address, string company_name) 
+            string name, phone_number, address,companyName;
             cout << endl;
             cout << "Enter name: ";
             cin.ignore();
@@ -86,9 +171,15 @@ int main() {
             getline(std::cin, phone_number);
             cout << "Enter address: ";
             getline(std::cin, address);
+            cout << "Company name: ";
+            cin.ignore();
+            getline(std::cin, companyName);
             cout << endl;
-            Contact new_friend = Contact(name, phone_number, address);
-            friends.push_back(new_friend);
+
+            Contact newContact = Contact(name, address, companyName);
+            Friend newFriend = Friend(name, address, phone_number);
+            friends.push_back(newFriend);
+            business_contacts.push_back(newContact);
         }
 
         //View contact
@@ -108,6 +199,7 @@ int main() {
                 cin >> contactIndex;
                 if (contactIndex > 0 && contactIndex <= friends.size()) {
                     friends.erase(friends.begin() + (contactIndex - 1));
+                    business_contacts.erase(business_contacts.begin() + (contactIndex - 1));
                     cout << "Contact deleted" << endl;
                 }
                 else {
@@ -132,14 +224,24 @@ int main() {
                     cin.ignore();
                     getline(cin, name);
                     friends[contactIndex - 1].setName(name);
+                    business_contacts[contactIndex - 1].setName(name);
                     cout << "Enter new phone number: ";
                     string phone_number;
                     getline(cin, phone_number);
-                    friends[contactIndex - 1].setPhoneNumber(phone_number);
+                    friends[contactIndex - 1].setPhone(phone_number);
+                  
                     cout << "Enter new address: ";
                     string address;
                     getline(cin, address);
-                    friends[contactIndex - 1].setAddress(address);
+                    friends[contactIndex - 1].setAddress(address);  
+                    business_contacts[contactIndex - 1].setAddress(address);
+
+                    cout << "Enter company name: ";
+                    string companyName;
+                    cin.ignore();
+                    getline(cin, companyName);
+                    business_contacts[contactIndex - 1].setCompanyName(companyName);
+
                     cout << "Contact " << contactIndex << "has been ammended" << endl;
                     cout << endl;
                 }
@@ -162,7 +264,7 @@ int main() {
                     for (int i = 0; i < friends.size(); i++) {
                         for (int j = i + 1; j < friends.size(); j++) {
                             if (friends[i].getName() > friends[j].getName()) {
-                                Contact temp = friends[i];
+                                Friend temp = friends[i];
                                 friends[i] = friends[j];
                                 friends[j] = temp;
                             }
@@ -170,15 +272,16 @@ int main() {
                     }
                     for (int i = 0; i < friends.size(); i++) {
                         cout << "\n\nName           :" << friends[i].getName() << endl;
-                        cout << "Contact Number :" << friends[i].getPhoneNumber() << endl;
-                        cout << "Address        :" << friends[i].getAddress();
+                        cout << "Contact Number :" << friends[i].getPhone() << endl;
+                        cout << "Address        :" << friends[i].getAddress() <<endl;
+                        cout << "Company Name   :" << business_contacts[i].getCompanyName() << endl;
                     }
                 }
                 else if (sortChoice == 2) {
                     for (int i = 0; i < friends.size(); i++) {
                         for (int j = i + 1; j < friends.size(); j++) {
                             if (friends[i].getName() < friends[j].getName()) {
-                                Contact temp = friends[i];
+                                Friend temp = friends[i];
                                 friends[i] = friends[j];
                                 friends[j] = temp;
                             }
@@ -186,8 +289,9 @@ int main() {
                     }
                     for (int i = 0; i < friends.size(); i++) {
                         cout << "\n\nName           :" << friends[i].getName() << endl;
-                        cout << "Contact Number :" << friends[i].getPhoneNumber() << endl;
-                        cout << "Address        :" << friends[i].getAddress();
+                        cout << "Contact Number :" << friends[i].getPhone() << endl;
+                        cout << "Address        :" << friends[i].getAddress() << endl;
+                        cout << "Company Name   :" << business_contacts[i].getCompanyName() << endl;
                     }
                 }
                 else {
@@ -195,7 +299,7 @@ int main() {
                 }
             }
         }
-
+        // Search based on a value
         else if (choice == 6) {
             string searchValue;
             cout << "Enter the value to search for: ";
@@ -203,10 +307,11 @@ int main() {
             getline(cin, searchValue);
             bool found = false;
             for (int i = 0; i < friends.size(); i++) {
-                if (friends[i].getName() == searchValue || friends[i].getPhoneNumber() == searchValue || friends[i].getAddress() == searchValue) {
+                if (friends[i].getName() == searchValue || friends[i].getPhone() == searchValue || friends[i].getAddress() == searchValue) {
                     cout << "Name: " << friends[i].getName() << endl;
-                    cout << "Phone Number: " << friends[i].getPhoneNumber() << endl;
+                    cout << "Phone Number: " << friends[i].getPhone() << endl;
                     cout << "Address:" << friends[i].getAddress() << endl;
+                    cout << "Company Name:" << business_contacts[i].getCompanyName();
                     cout << endl;
                     found = true;
                 }
@@ -225,14 +330,15 @@ int main() {
             for (int i = 0; i < friends.size(); i++) {
                 outfile << i + 1 << ": ";
                 outfile << friends[i].getName() << " ";
-                outfile << friends[i].getPhoneNumber() << " ";
-                outfile << friends[i].getAddress() << endl;
+                outfile << friends[i].getPhone() << " ";
+                outfile << friends[i].getAddress() << " ";
+                outfile << business_contacts[i].getCompanyName() << endl;
             }
             outfile.close();
             cout << "Contacts saved to " << fileName << ".txt" << endl;
             cout << endl;
         }
-
+ 
         else if (choice == 8) {
             string fileName;
             cout << "Enter the file name: ";
@@ -240,15 +346,17 @@ int main() {
             string fileFullName = fileName + ".txt";
             ifstream infile;
             infile.open(fileFullName.c_str());
-            string name, phone_number, email;
+            string name, phone_number, address,companyName;
             if (!infile) {
                 cout << "File not found" << endl;
                 continue;
-            }
+            }  
+            
 
             int count = 0;
-            while (infile >> name >> phone_number >> email) {
-                Contact new_friend = Contact(name, phone_number, email);
+            while (infile >> name >> phone_number >> address>>companyName) {
+                Friend new_friend = Friend(name, address,phone_number);
+                Contact new_contact = Contact(name, address, companyName);
                 friends.push_back(new_friend);
                 count++;
             }
@@ -268,6 +376,4 @@ int main() {
         }
     }
 
-    return 0;
 }
-*/
